@@ -1,15 +1,19 @@
 package com.example.oauth2;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ClientRegistrations;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 /*
 @Configuration
@@ -35,6 +39,7 @@ public class OAuth2ClientConfig {
 @EnableWebSecurity
 public class OAuth2ClientConfig {
 
+  /*
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.authorizeHttpRequests(authRequest -> authRequest
@@ -44,4 +49,52 @@ public class OAuth2ClientConfig {
     http.oauth2Login(Customizer.withDefaults());
     return http.build();
   }
+
+   */
+  @Autowired
+  private ClientRegistrationRepository clientRegistrationRepository;
+
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.authorizeHttpRequests(authRequest -> authRequest.antMatchers("/home").permitAll()
+        .anyRequest().authenticated());
+    http.oauth2Login(Customizer.withDefaults());
+
+    /*
+    http.logout()
+        .logoutSuccessHandler(oidcLogoutSuccessHandler())
+        .invalidateHttpSession(true)
+        .clearAuthentication(true)
+        .deleteCookies("JSESSIONID");
+     */
+    /*
+    http.oauth2Login(oauth2 -> oauth2.loginPage("/login")
+        .loginProcessingUrl("/login/oauth2/code/*") //둘다 사용할 수 있지만 우선순위가 redirectEndpoint 설정이 더 높기 떄문에 적용되지 않는다.
+        .authorizationEndpoint(authorizationEndpointConfig ->
+            //authorizationEndpointConfig.baseUri("/oauth2/authentication/**"))) //기본값
+            authorizationEndpoi ntConfig.baseUri("/oauth2/v1/authorization"))
+        .redirectionEndpoint(redirectionEndpointConfig ->
+            //redirectionEndpointConfig.baseUri("/login/oauth2/code/*")) //기본값
+            redirectionEndpointConfig.baseUri("/login/v1/oauth2/code/*"))
+    );
+     */
+    http.oauth2Login(authLogin -> authLogin.authorizationEndpoint(
+        authEndpoint -> authEndpoint.authorizationRequestResolver(
+            customOAuth2AuthorizationRequestResolver())));
+    http.logout().logoutSuccessUrl("/home");
+    return http.build();
+  }
+
+  private OAuth2AuthorizationRequestResolver customOAuth2AuthorizationRequestResolver() {
+    return new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
+  }
+
+  private LogoutSuccessHandler oidcLogoutSuccessHandler() {
+    OidcClientInitiatedLogoutSuccessHandler successHandler = new OidcClientInitiatedLogoutSuccessHandler(
+        clientRegistrationRepository);
+    successHandler.setPostLogoutRedirectUri("http://localhost:8081/login");
+    return successHandler;
+  }
+
+
 }
