@@ -56,10 +56,11 @@ public class OAuth2ClientConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    /*
     http.authorizeHttpRequests(authRequest -> authRequest.antMatchers("/home").permitAll()
         .anyRequest().authenticated());
     http.oauth2Login(Customizer.withDefaults());
-
+    */
     /*
     http.logout()
         .logoutSuccessHandler(oidcLogoutSuccessHandler())
@@ -78,15 +79,24 @@ public class OAuth2ClientConfig {
             redirectionEndpointConfig.baseUri("/login/v1/oauth2/code/*"))
     );
      */
+    /*
     http.oauth2Login(authLogin -> authLogin.authorizationEndpoint(
         authEndpoint -> authEndpoint.authorizationRequestResolver(
             customOAuth2AuthorizationRequestResolver())));
     http.logout().logoutSuccessUrl("/home");
+     */
+    http.authorizeHttpRequests(
+            authRequest -> authRequest.antMatchers("/home2", "/client").permitAll().anyRequest().authenticated())
+        //.oauth2Login(Customizer.withDefaults())
+        .oauth2Client(Customizer.withDefaults()); //최종 사용자의 인증처리까지 해주지는 않는다.
+    //클라이언트의 인증 처리까지만 가능하다. -> 이는 별도로 커스텀하게 작성해주어야 한다.
+    http.logout().logoutSuccessUrl("/home2");
     return http.build();
   }
 
   private OAuth2AuthorizationRequestResolver customOAuth2AuthorizationRequestResolver() {
-    return new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
+    return new CustomOAuth2AuthorizationRequestResolver(clientRegistrationRepository,
+        "/oauth2/authorization");
   }
 
   private LogoutSuccessHandler oidcLogoutSuccessHandler() {
