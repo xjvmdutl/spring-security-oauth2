@@ -1,4 +1,4 @@
-package com.example.oauth2;
+package com.example.oauth2.controller;
 
 import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;

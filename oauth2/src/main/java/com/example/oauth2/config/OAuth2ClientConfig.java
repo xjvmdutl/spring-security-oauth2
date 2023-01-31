@@ -1,5 +1,6 @@
-package com.example.oauth2;
+package com.example.oauth2.config;
 
+import com.example.oauth2.CustomOAuth2AuthorizationRequestResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -85,12 +86,19 @@ public class OAuth2ClientConfig {
             customOAuth2AuthorizationRequestResolver())));
     http.logout().logoutSuccessUrl("/home");
      */
+    /*
     http.authorizeHttpRequests(
             authRequest -> authRequest.antMatchers("/home2", "/client").permitAll().anyRequest().authenticated())
         //.oauth2Login(Customizer.withDefaults())
         .oauth2Client(Customizer.withDefaults()); //최종 사용자의 인증처리까지 해주지는 않는다.
     //클라이언트의 인증 처리까지만 가능하다. -> 이는 별도로 커스텀하게 작성해주어야 한다.
     http.logout().logoutSuccessUrl("/home2");
+    return http.build();
+     */
+    http.authorizeHttpRequests(
+            authRequest -> authRequest.antMatchers("/", "/oauth2Login", "/logout", "/client").permitAll()
+                .anyRequest().authenticated())
+        .oauth2Client(Customizer.withDefaults());
     return http.build();
   }
 
