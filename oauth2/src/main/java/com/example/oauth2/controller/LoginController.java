@@ -39,6 +39,7 @@ public class LoginController {
         auth2AuthorizeRequest);
     if (authorizedClient != null) {
 
+
     }
     return "redirect:/";
   }
