@@ -38,7 +38,6 @@ public class CustomOAuth2AuthorizationRequestResolver implements
         clientRegistrationRepository, BaseUri);
   }
 
-  //PKCE를 제외한 값은 기존방식을 이용할 것이다.
   @Override
   public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
     String registrationId = resolveRegistrationId(request);
