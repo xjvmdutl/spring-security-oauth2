@@ -62,25 +62,10 @@ public class LoginController {
     OAuth2AuthorizedClient authorizedClient = oAuth2AuthorizedClientManager.authorize(
         auth2AuthorizeRequest);
 
-    if (authorizedClient != null) {
-      //인증이 성공했을때
-      OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService = new DefaultOAuth2UserService();
-      ClientRegistration clientRegistration = authorizedClient.getClientRegistration();
-      OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
-      OAuth2UserRequest oAuth2UserRequest = new OAuth2UserRequest(clientRegistration, accessToken);
-      OAuth2User oAuth2User = oAuth2UserService.loadUser(oAuth2UserRequest);
+    model.addAttribute("authorizedClient", authorizedClient.getAccessToken().getTokenValue());
+    //client 자체가 사용자 역할을 겸해서 하기 때문에 별도의 사용자 정보를 통해 인증처리하는 과정이 필요가 없다
+    //해당 방식은 토큰은 발급 받았지만 실제 유저에 대한 인증은 받지 않은 것이기 때문에 해당 방식을 사용할 때는 클라이언트 끼리 통신할 때 많이 사용한다
 
-      SimpleAuthorityMapper authorityMapper = new SimpleAuthorityMapper(); //Scope를 통해 커스텀하게 권한 조율 가능
-      authorityMapper.setPrefix("SYSTEM_"); //SYSTEM_SCOPE_XXX
-      Set<GrantedAuthority> grantedAuthorities = authorityMapper.mapAuthorities(
-          oAuth2User.getAuthorities());
-      OAuth2AuthenticationToken oAuth2AuthenticationToken = new OAuth2AuthenticationToken(
-          oAuth2User, grantedAuthorities, clientRegistration.getRegistrationId());
-
-      SecurityContextHolder.getContext().setAuthentication(oAuth2AuthenticationToken);
-
-      model.addAttribute("oAuth2AuthenticationToken", oAuth2AuthenticationToken);
-    }
     return "home";
   }
 
