@@ -1,5 +1,6 @@
 package com.example.oauth2.config;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -27,9 +28,10 @@ public class AppConfig {
     OAuth2AuthorizedClientProvider auth2AuthorizedClientProvider =
         OAuth2AuthorizedClientProviderBuilder.builder()
             .authorizationCode()
+            //해당 설정을 통해 AccessToken이 만료 시간을 빨리 만료되게끔 한다(내부적으로 해당 값을 빼는 코드가 있다)
+            .password(passwordGrantBuilder -> passwordGrantBuilder.clockSkew(Duration.ofSeconds(3600)))
             .clientCredentials()
-            .password()
-            .refreshToken()
+            .refreshToken(refreshTokenGrantBuilder -> refreshTokenGrantBuilder.clockSkew(Duration.ofSeconds(3600)))
             .build();
 
     DefaultOAuth2AuthorizedClientManager oAuth2AuthorizedClientManager =
